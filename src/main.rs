@@ -1,5 +1,8 @@
 use std::{fs::File, io::Write};
 
+mod vector;
+use vector::Vec3;
+
 fn main() {
     let x = 200;
     let y = 100;
@@ -10,9 +13,11 @@ fn main() {
 
     for i in 0..y {
         for j in 0..x {
-            let r = ((j as f32 / x as f32) * 255.0) as usize;
-            let g = ((i as f32 / y as f32) * 255.0) as usize;
-            let b = (0.2 * 255.0) as usize;
+            let vec = Vec3::new(j as f32 / x as f32, i as f32 / y as f32,  0.2);
+
+            let r = (vec.x * 255.0) as usize;
+            let g = (vec.y * 255.0) as usize;
+            let b = (vec.z * 255.0) as usize;
 
             let pixel = format!("{} {} {}\n", r, 255 - g, b);
             output.write_all(pixel.as_bytes()).unwrap();
