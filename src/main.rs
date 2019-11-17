@@ -2,6 +2,7 @@ use std::{fs::File, io::Write};
 
 mod vector;
 use vector::Vec3;
+mod ray;
 
 fn main() {
     let x = 200;
@@ -13,7 +14,7 @@ fn main() {
 
     for i in 0..y {
         for j in 0..x {
-            let vec = Vec3::new(j as f32 / x as f32, i as f32 / y as f32,  0.2);
+            let vec = Vec3::new(j as f32 / x as f32, i as f32 / y as f32, 0.2);
 
             let r = (vec.x * 255.0) as usize;
             let g = (vec.y * 255.0) as usize;
