@@ -11,6 +11,11 @@ impl Vec3 {
     pub fn new(x: f32, y: f32, z: f32) -> Self {
         Vec3 { x, y, z }
     }
+
+    pub fn get_unit(&self) -> Vec3 {
+        let mag = (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt();
+        Vec3::new(self.x / mag, self.y / mag, self.z / mag)
+    }
 }
 
 impl Add for Vec3 {
