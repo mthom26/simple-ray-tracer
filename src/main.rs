@@ -1,4 +1,4 @@
-use std::{fs::File, io::Write};
+use std::{fs::{File, create_dir}, io::Write, path::Path};
 
 mod vector;
 use vector::Vec3;
@@ -15,6 +15,10 @@ fn color(ray: Ray) -> Vec3 {
 fn main() {
     let x = 200;
     let y = 100;
+
+    if !Path::new("output").is_dir() {
+        create_dir("output").unwrap();
+    }
 
     let mut output = File::create("output/output.ppm").unwrap();
     let header = format!("P3\n{} {}\n255\n", x, y);
