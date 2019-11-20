@@ -1,41 +1,29 @@
 use std::{
+    f32::MAX,
     fs::{create_dir, File},
     io::Write,
     path::Path,
 };
 
 mod vector;
-use vector::{dot, Vec3};
+use vector::Vec3;
 mod ray;
 use ray::Ray;
+mod shapes;
+use shapes::Sphere;
 
-fn color(ray: Ray) -> Vec3 {
-    let t = hit_sphere(Vec3::new(0.0, 0.0, -1.0), 0.5, &ray);
-
-    if t > 0.0 {
-        let vector = ray.point_at_parameter(t) - Vec3::new(0.0, 0.0, -1.0);
-        let unit = vector.get_unit();
-        return Vec3::new(unit.x + 1.0, unit.y + 1.0, unit.z + 1.0) * 0.5;
+fn color_sphere(ray: Ray, sphere: Sphere) -> Vec3 {
+    match sphere.hit(&ray, 0.0, MAX) {
+        Some(hit) => Vec3::new(hit.normal.x + 1.0, hit.normal.y + 1.0, hit.normal.z + 1.0) * 0.5,
+        None => panic!("This function shouldn't be called if the ray doesn't hit."),
     }
+}
 
+fn color_background(ray: Ray) -> Vec3 {
     let unit_dir = ray.dir.get_unit();
     // Interpolate along y axis
     let t = (unit_dir.y + 1.0) * 0.5;
     ((1.0 - t) * Vec3::new(1.0, 1.0, 1.0)) + (t * Vec3::new(0.5, 0.7, 1.0))
-}
-
-fn hit_sphere(center: Vec3, radius: f32, ray: &Ray) -> f32 {
-    let oc = ray.origin.clone() - center;
-    let a = dot(&ray.dir, &ray.dir);
-    let b = 2.0 * dot(&oc, &ray.dir);
-    let c = dot(&oc, &oc) - (radius * radius);
-    let discriminant = (b * b) - (4.0 * a * c);
-
-    if discriminant < 0.0 {
-        return -1.0;
-    } else {
-        return (-b - f32::sqrt(discriminant)) / (2.0 * a);
-    }
 }
 
 fn main() {
@@ -55,6 +43,14 @@ fn main() {
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
 
+    let t_min = 0.0;
+    let t_max = MAX;
+
+    let spheres = vec![
+        Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5),
+        Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0),
+    ];
+
     for i in 0..y {
         for j in 0..x {
             let u = j as f32 / x as f32;
@@ -64,7 +60,27 @@ fn main() {
                 origin.clone(),
                 lower_left.clone() + (u * horizontal.clone()) + (v * vertical.clone()),
             );
-            let col = color(ray);
+
+            let mut did_hit = false;
+            let mut closest = t_max;
+            let mut target_index = 0;
+
+            // Find closest hit point in 'spheres'
+            for (index, sphere) in spheres.iter().enumerate() {
+                match sphere.hit(&ray, t_min, closest) {
+                    Some(hit) => {
+                        did_hit = true;
+                        closest = hit.t;
+                        target_index = index;
+                    }
+                    None => {}
+                }
+            }
+
+            let col = match did_hit {
+                true => color_sphere(ray, spheres[target_index]),
+                false => color_background(ray),
+            };
 
             let r = (col.x * 255.0) as usize;
             let g = (col.y * 255.0) as usize;
