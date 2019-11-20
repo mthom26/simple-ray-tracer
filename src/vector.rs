@@ -70,3 +70,8 @@ impl Div<f32> for Vec3 {
         Vec3::new(self.x / other, self.y / other, self.z / other)
     }
 }
+
+// Return dot product of two Vec3 vectors
+pub fn dot(a: &Vec3, b: &Vec3) -> f32 {
+    (a.x * b.x) + (a.y * b.y) + (a.z * b.z)
+}
