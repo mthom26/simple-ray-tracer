@@ -61,25 +61,23 @@ fn main() {
                 lower_left.clone() + (u * horizontal.clone()) + (v * vertical.clone()),
             );
 
-            let mut did_hit = false;
             let mut closest = t_max;
-            let mut target_index = 0;
+            let mut target_index = None;
 
             // Find closest hit point in 'spheres'
             for (index, sphere) in spheres.iter().enumerate() {
                 match sphere.hit(&ray, t_min, closest) {
                     Some(hit) => {
-                        did_hit = true;
                         closest = hit.t;
-                        target_index = index;
+                        target_index = Some(index);
                     }
                     None => {}
                 }
             }
 
-            let col = match did_hit {
-                true => color_sphere(ray, spheres[target_index]),
-                false => color_background(ray),
+            let col = match target_index {
+                Some(index) => color_sphere(ray, spheres[index]),
+                None => color_background(ray),
             };
 
             let r = (col.x * 255.0) as usize;
