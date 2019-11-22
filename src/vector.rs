@@ -1,6 +1,6 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3 {
     pub x: f32,
     pub y: f32,
@@ -25,11 +25,20 @@ impl Add for Vec3 {
         Vec3::new(self.x + other.x, self.y + other.y, self.z + other.z)
     }
 }
+
 impl Add<f32> for Vec3 {
     type Output = Vec3;
 
     fn add(self, other: f32) -> Vec3 {
         Vec3::new(self.x + other, self.y + other, self.z + other)
+    }
+}
+
+impl AddAssign for Vec3 {
+    fn add_assign(&mut self, other: Vec3) {
+        self.x += other.x;
+        self.y += other.y;
+        self.z += other.z;
     }
 }
 
@@ -71,7 +80,37 @@ impl Div<f32> for Vec3 {
     }
 }
 
+impl DivAssign<f32> for Vec3 {
+    fn div_assign(&mut self, other: f32) {
+        self.x /= other;
+        self.y /= other;
+        self.z /= other;
+    }
+}
+
 // Return dot product of two Vec3 vectors
 pub fn dot(a: &Vec3, b: &Vec3) -> f32 {
     (a.x * b.x) + (a.y * b.y) + (a.z * b.z)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::vector::Vec3;
+
+    #[test]
+    fn addition() {
+        let mut a = Vec3::new(6.0, 4.0, 2.0);
+        let b = Vec3::new(1.0, 1.0, 1.0);
+        a += b;
+        let expected = Vec3::new(7.0, 5.0, 3.0);
+        assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn division() {
+        let mut a = Vec3::new(6.0, 4.0, 2.0);
+        a /= 2.0;
+        let expected = Vec3::new(3.0, 2.0, 1.0);
+        assert_eq!(a, expected);
+    }
 }
