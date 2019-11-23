@@ -16,8 +16,12 @@ mod camera;
 use camera::Camera;
 
 fn color(ray: Ray, world: &dyn Hittable) -> Vec3 {
-    match world.hit(&ray, 0.0, MAX) {
-        Some(hit) => Vec3::new(hit.normal.x + 1.0, hit.normal.y + 1.0, hit.normal.z + 1.0) * 0.5,
+    match world.hit(&ray, 0.001, MAX) {
+        Some(hit) => {
+            let target = hit.point + hit.normal + random_in_unit_sphere();
+            let new_ray = Ray::new(hit.point, target - hit.point);
+            color(new_ray, world) * 0.5
+        }
         None => color_background(ray),
     }
 }
@@ -69,6 +73,11 @@ fn main() {
 
             col /= s as f32;
 
+            // Gamma correction
+            col.x = col.x.sqrt();
+            col.y = col.y.sqrt();
+            col.z = col.z.sqrt();
+
             let r = (col.x * 255.0) as usize;
             let g = (col.y * 255.0) as usize;
             let b = (col.z * 255.0) as usize;
@@ -82,4 +91,13 @@ fn main() {
 fn gen_random() -> f32 {
     // Return random number between 0.0 and 1.0
     thread_rng().gen()
+}
+
+fn random_in_unit_sphere() -> Vec3 {
+    let mut p =
+        (2.0 * Vec3::new(gen_random(), gen_random(), gen_random())) - Vec3::new(1.0, 1.0, 1.0);
+    while (p.x.powi(2) + p.y.powi(2) + p.z.powi(2)) >= 1.0 {
+        p = (2.0 * Vec3::new(gen_random(), gen_random(), gen_random())) - Vec3::new(1.0, 1.0, 1.0);
+    }
+    p
 }
