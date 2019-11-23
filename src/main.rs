@@ -1,3 +1,4 @@
+use indicatif::{ProgressBar, ProgressStyle};
 use rand::{thread_rng, Rng};
 use std::{
     f32::MAX,
@@ -46,6 +47,9 @@ fn main() {
     let header = format!("P3\n{} {}\n255\n", x, y);
     output.write_all(header.as_bytes()).unwrap();
 
+    // Setup progress indicator
+    let progress = initialise_progress_indicator(y);
+
     let lower_left = Vec3::new(-2.0, -1.0, -1.0);
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
@@ -85,7 +89,9 @@ fn main() {
             let pixel = format!("{} {} {}\n", r, g, b);
             output.write_all(pixel.as_bytes()).unwrap();
         }
+        progress.inc(1);
     }
+    progress.finish_with_message("Finished!");
 }
 
 fn gen_random() -> f32 {
@@ -100,4 +106,14 @@ fn random_in_unit_sphere() -> Vec3 {
         p = (2.0 * Vec3::new(gen_random(), gen_random(), gen_random())) - Vec3::new(1.0, 1.0, 1.0);
     }
     p
+}
+
+fn initialise_progress_indicator(steps: u64) -> ProgressBar {
+    let progress_style = ProgressStyle::default_bar()
+        .template("{msg} {bar:80.green/white} {pos:>4}/{len} [{elapsed}]")
+        .progress_chars("=>-");
+    let progress = ProgressBar::new(steps);
+    progress.set_style(progress_style);
+    progress.set_message("Generating image...");
+    progress
 }
