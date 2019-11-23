@@ -1,5 +1,6 @@
-use std::default::Default;
+use std::sync::Arc;
 
+use crate::material::Material;
 use crate::vector::Vec3;
 
 pub struct Ray {
@@ -17,25 +18,21 @@ impl Ray {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct RayHit {
     pub t: f32,
     pub point: Vec3,
     pub normal: Vec3,
+    pub mat: Arc<dyn Material>,
 }
 
 impl RayHit {
-    pub fn new(t: f32, point: Vec3, normal: Vec3) -> Self {
-        RayHit { t, point, normal }
-    }
-}
-
-impl Default for RayHit {
-    fn default() -> Self {
+    pub fn new(t: f32, point: Vec3, normal: Vec3, mat: Arc<dyn Material>) -> Self {
         RayHit {
-            t: 0.0,
-            point: Vec3::new(0.0, 0.0, 0.0),
-            normal: Vec3::new(0.0, 0.0, 0.0),
+            t,
+            point,
+            normal,
+            mat,
         }
     }
 }

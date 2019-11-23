@@ -1,10 +1,11 @@
 use indicatif::{ProgressBar, ProgressStyle};
-use rand::{thread_rng, Rng};
+
 use std::{
     f32::MAX,
     fs::{create_dir, File},
     io::Write,
     path::Path,
+    sync::Arc,
 };
 
 mod vector;
@@ -15,13 +16,24 @@ mod shapes;
 use shapes::{Hittable, Sphere};
 mod camera;
 use camera::Camera;
+mod material;
+use material::Lambertian;
+mod utils;
+use utils::gen_random;
 
-fn color(ray: Ray, world: &dyn Hittable) -> Vec3 {
+fn color(ray: Ray, world: &dyn Hittable, depth: usize) -> Vec3 {
     match world.hit(&ray, 0.001, MAX) {
         Some(hit) => {
-            let target = hit.point + hit.normal + random_in_unit_sphere();
-            let new_ray = Ray::new(hit.point, target - hit.point);
-            color(new_ray, world) * 0.5
+            if depth > 50 {
+                return Vec3::new(0.0, 0.0, 0.0);
+            }
+            match hit.mat.scatter(ray, hit.clone()) {
+                Some((att, scattered)) => att * color(scattered, world, depth + 1),
+                None => Vec3::new(0.0, 0.0, 0.0),
+            }
+            // let target = hit.point + hit.normal + random_in_unit_sphere();
+            // let new_ray = Ray::new(hit.point, target - hit.point);
+            // color(new_ray, world, depth + 1) * 0.5
         }
         None => color_background(ray),
     }
@@ -55,9 +67,11 @@ fn main() {
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
 
+    let mat = Arc::new(Lambertian::default());
+
     let world: Vec<Box<dyn Hittable>> = vec![
-        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
-        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
+        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat.clone())),
+        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, mat)),
     ];
 
     let cam = Camera::new(lower_left, horizontal, vertical, origin);
@@ -72,7 +86,7 @@ fn main() {
 
                 let ray = cam.get_ray(u, v);
 
-                col += color(ray, &world);
+                col += color(ray, &world, 0);
             }
 
             col /= s as f32;
@@ -92,20 +106,6 @@ fn main() {
         progress.inc(1);
     }
     progress.finish_with_message("Finished!");
-}
-
-fn gen_random() -> f32 {
-    // Return random number between 0.0 and 1.0
-    thread_rng().gen()
-}
-
-fn random_in_unit_sphere() -> Vec3 {
-    let mut p =
-        (2.0 * Vec3::new(gen_random(), gen_random(), gen_random())) - Vec3::new(1.0, 1.0, 1.0);
-    while (p.x.powi(2) + p.y.powi(2) + p.z.powi(2)) >= 1.0 {
-        p = (2.0 * Vec3::new(gen_random(), gen_random(), gen_random())) - Vec3::new(1.0, 1.0, 1.0);
-    }
-    p
 }
 
 fn initialise_progress_indicator(steps: u64) -> ProgressBar {
