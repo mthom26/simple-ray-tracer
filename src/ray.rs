@@ -17,6 +17,7 @@ impl Ray {
     }
 }
 
+#[derive(Clone, Copy)]
 pub struct RayHit {
     pub t: f32,
     pub point: Vec3,

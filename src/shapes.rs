@@ -3,6 +3,34 @@ use crate::{
     vector::{dot, Vec3},
 };
 
+pub trait Hittable {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayHit>;
+}
+
+impl Hittable for Vec<Box<dyn Hittable>> {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayHit> {
+        let mut hit: Option<RayHit> = None;
+
+        for object in self.iter() {
+            if let Some(object_hit) = object.hit(ray, t_min, t_max) {
+                match hit {
+                    // Check if the new hit is closer than the previous hit
+                    Some(prev) => {
+                        if object_hit.t < prev.t {
+                            hit = Some(object_hit);
+                        }
+                    }
+                    None => {
+                        hit = Some(object_hit);
+                    }
+                }
+            }
+        }
+
+        hit
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct Sphere {
     center: Vec3,
@@ -13,8 +41,10 @@ impl Sphere {
     pub fn new(center: Vec3, radius: f32) -> Self {
         Sphere { center, radius }
     }
+}
 
-    pub fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayHit> {
+impl Hittable for Sphere {
+    fn hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<RayHit> {
         let oc = ray.origin - self.center;
         let a = dot(&ray.dir, &ray.dir);
         let b = dot(&oc, &ray.dir);

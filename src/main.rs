@@ -11,14 +11,14 @@ use vector::Vec3;
 mod ray;
 use ray::Ray;
 mod shapes;
-use shapes::Sphere;
+use shapes::{Hittable, Sphere};
 mod camera;
 use camera::Camera;
 
-fn color_sphere(ray: Ray, sphere: Sphere) -> Vec3 {
-    match sphere.hit(&ray, 0.0, MAX) {
+fn color(ray: Ray, world: &dyn Hittable) -> Vec3 {
+    match world.hit(&ray, 0.0, MAX) {
         Some(hit) => Vec3::new(hit.normal.x + 1.0, hit.normal.y + 1.0, hit.normal.z + 1.0) * 0.5,
-        None => panic!("This function shouldn't be called if the ray doesn't hit."),
+        None => color_background(ray),
     }
 }
 
@@ -47,12 +47,9 @@ fn main() {
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
 
-    let t_min = 0.0;
-    let t_max = MAX;
-
-    let spheres = vec![
-        Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5),
-        Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0),
+    let world: Vec<Box<dyn Hittable>> = vec![
+        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5)),
+        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0)),
     ];
 
     let cam = Camera::new(lower_left, horizontal, vertical, origin);
@@ -67,24 +64,7 @@ fn main() {
 
                 let ray = cam.get_ray(u, v);
 
-                let mut closest = t_max;
-                let mut target_index = None;
-
-                // Find closest hit point in 'spheres'
-                for (index, sphere) in spheres.iter().enumerate() {
-                    match sphere.hit(&ray, t_min, closest) {
-                        Some(hit) => {
-                            closest = hit.t;
-                            target_index = Some(index);
-                        }
-                        None => {}
-                    }
-                }
-
-                match target_index {
-                    Some(index) => col += color_sphere(ray, spheres[index]),
-                    None => col += color_background(ray),
-                }
+                col += color(ray, &world);
             }
 
             col /= s as f32;
