@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::material::Material;
 use crate::vector::Vec3;
 
+#[derive(Clone, Copy)]
 pub struct Ray {
     pub origin: Vec3,
     pub dir: Vec3,

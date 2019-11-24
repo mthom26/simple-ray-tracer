@@ -17,23 +17,22 @@ use shapes::{Hittable, Sphere};
 mod camera;
 use camera::Camera;
 mod material;
-use material::Lambertian;
+use material::{Lambertian, Metal};
 mod utils;
 use utils::gen_random;
 
 fn color(ray: Ray, world: &dyn Hittable, depth: usize) -> Vec3 {
     match world.hit(&ray, 0.001, MAX) {
         Some(hit) => {
-            if depth > 50 {
-                return Vec3::new(0.0, 0.0, 0.0);
+            if depth < 50 {
+                if let Some((att, scattered)) = hit.mat.scatter(ray, hit.clone()) {
+                    att * color(scattered, world, depth + 1)
+                } else {
+                    Vec3::new(0.0, 0.0, 0.0)
+                }
+            } else {
+                Vec3::new(0.0, 0.0, 0.0)
             }
-            match hit.mat.scatter(ray, hit.clone()) {
-                Some((att, scattered)) => att * color(scattered, world, depth + 1),
-                None => Vec3::new(0.0, 0.0, 0.0),
-            }
-            // let target = hit.point + hit.normal + random_in_unit_sphere();
-            // let new_ray = Ray::new(hit.point, target - hit.point);
-            // color(new_ray, world, depth + 1) * 0.5
         }
         None => color_background(ray),
     }
@@ -67,11 +66,17 @@ fn main() {
     let vertical = Vec3::new(0.0, 2.0, 0.0);
     let origin = Vec3::new(0.0, 0.0, 0.0);
 
-    let mat = Arc::new(Lambertian::default());
+    // Materials
+    let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
+    let mat_two = Arc::new(Lambertian::new(Vec3::new(0.5, 0.4, 0.1)));
+    let mat_three = Arc::new(Metal::new(Vec3::new(0.3, 0.2, 0.8)));
+    let mat_four = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8)));
 
     let world: Vec<Box<dyn Hittable>> = vec![
-        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat.clone())),
-        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, mat)),
+        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat_one)),
+        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, mat_two)),
+        Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, mat_three)),
+        Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_four)),
     ];
 
     let cam = Camera::new(lower_left, horizontal, vertical, origin);
