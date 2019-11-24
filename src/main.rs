@@ -69,8 +69,8 @@ fn main() {
     // Materials
     let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
     let mat_two = Arc::new(Lambertian::new(Vec3::new(0.5, 0.4, 0.1)));
-    let mat_three = Arc::new(Metal::new(Vec3::new(0.3, 0.2, 0.8)));
-    let mat_four = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8)));
+    let mat_three = Arc::new(Metal::new(Vec3::new(0.3, 0.2, 0.8), 0.1));
+    let mat_four = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.6));
 
     let world: Vec<Box<dyn Hittable>> = vec![
         Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat_one)),

@@ -40,18 +40,21 @@ impl Default for Lambertian {
 #[derive(Clone, Copy)]
 pub struct Metal {
     pub albedo: Vec3,
+    pub fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(albedo: Vec3) -> Self {
-        Metal { albedo }
+    pub fn new(albedo: Vec3, fuzz: f32) -> Self {
+        let fuzz = if fuzz > 1.0 { 1.0 } else { fuzz };
+        Metal { albedo, fuzz }
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, ray: Ray, hit: RayHit) -> Option<(Vec3, Ray)> {
         let reflected = reflected(ray.dir.get_unit(), hit.normal);
-        let new_ray = Ray::new(hit.point, reflected);
+        let fuzz = self.fuzz * random_in_unit_sphere();
+        let new_ray = Ray::new(hit.point, reflected + fuzz);
         if dot(&new_ray.dir, &hit.normal) > 0.0 {
             return Some((self.albedo, new_ray));
         }
