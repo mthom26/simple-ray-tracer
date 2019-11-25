@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, Neg};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Neg, Sub};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3 {
@@ -15,6 +15,10 @@ impl Vec3 {
     pub fn get_unit(&self) -> Vec3 {
         let mag = (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt();
         Vec3::new(self.x / mag, self.y / mag, self.z / mag)
+    }
+
+    pub fn get_mag(&self) -> f32 {
+        (self.x.powi(2) + self.y.powi(2) + self.z.powi(2)).sqrt()
     }
 }
 

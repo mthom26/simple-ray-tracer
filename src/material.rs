@@ -2,7 +2,7 @@ use std::default::Default;
 
 use crate::{
     ray::{Ray, RayHit},
-    utils::random_in_unit_sphere,
+    utils::{gen_random, random_in_unit_sphere},
     vector::{dot, Vec3},
 };
 
@@ -63,7 +63,7 @@ impl Material for Metal {
 }
 
 pub struct Dielectric {
-    pub refractive_index: f32
+    pub refractive_index: f32,
 }
 
 impl Dielectric {
@@ -76,22 +76,24 @@ impl Material for Dielectric {
     fn scatter(&self, ray: Ray, hit: RayHit) -> Option<(Vec3, Ray)> {
         let attenuation = Vec3::new(1.0, 1.0, 1.0);
 
-        let (outward_normal, rfx) = if dot(&ray.dir, &hit.normal) > 0.0 {
-            (-hit.normal, self.refractive_index)
+        let (outward_normal, rfx, cosine) = if dot(&ray.dir, &hit.normal) > 0.0 {
+            let cosine = self.refractive_index * dot(&ray.dir, &hit.normal) / ray.dir.get_mag();
+            (-hit.normal, self.refractive_index, cosine)
         } else {
-            (hit.normal, 1.0 / self.refractive_index)
+            let cosine = -dot(&ray.dir, &hit.normal) / ray.dir.get_mag();
+            (hit.normal, 1.0 / self.refractive_index, cosine)
         };
 
-        match refracted(ray.dir, outward_normal, rfx) {
-            Some(refracted) => {
+        if let Some(refracted) = refracted(ray.dir, outward_normal, rfx) {
+            let reflect_prob = schlick(cosine, self.refractive_index);
+            if gen_random() >= reflect_prob {
                 let refracted_ray = Ray::new(hit.point, refracted);
-                Some((attenuation, refracted_ray))
-            }
-            None => {
-                let reflected_ray = Ray::new(hit.point, reflected(ray.dir, hit.normal));
-                Some((attenuation, reflected_ray))
+                return Some((attenuation, refracted_ray));
             }
         }
+
+        let reflected_ray = Ray::new(hit.point, reflected(ray.dir, hit.normal));
+        Some((attenuation, reflected_ray))
     }
 }
 
@@ -109,4 +111,9 @@ fn refracted(input: Vec3, normal: Vec3, ni_over_nt: f32) -> Option<Vec3> {
     } else {
         None
     }
+}
+
+fn schlick(cosine: f32, refractive_index: f32) -> f32 {
+    let r = ((1.0 - refractive_index) / (1.0 + refractive_index)).powi(2);
+    r + (1.0 - r) * (1.0 - cosine).powi(5)
 }

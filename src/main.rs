@@ -17,7 +17,7 @@ use shapes::{Hittable, Sphere};
 mod camera;
 use camera::Camera;
 mod material;
-use material::{Lambertian, Metal, Dielectric};
+use material::{Dielectric, Lambertian, Metal};
 mod utils;
 use utils::gen_random;
 
