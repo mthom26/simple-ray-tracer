@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, Neg};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3 {
@@ -93,6 +93,14 @@ impl DivAssign<f32> for Vec3 {
         self.x /= other;
         self.y /= other;
         self.z /= other;
+    }
+}
+
+impl Neg for Vec3 {
+    type Output = Vec3;
+
+    fn neg(self) -> Vec3 {
+        Vec3::new(-self.x, -self.y, -self.z)
     }
 }
 

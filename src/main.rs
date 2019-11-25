@@ -17,7 +17,7 @@ use shapes::{Hittable, Sphere};
 mod camera;
 use camera::Camera;
 mod material;
-use material::{Lambertian, Metal};
+use material::{Lambertian, Metal, Dielectric};
 mod utils;
 use utils::gen_random;
 
@@ -70,13 +70,15 @@ fn main() {
     let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
     let mat_two = Arc::new(Lambertian::new(Vec3::new(0.5, 0.4, 0.1)));
     let mat_three = Arc::new(Metal::new(Vec3::new(0.3, 0.2, 0.8), 0.1));
-    let mat_four = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.6));
+    // let mat_four = Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), 0.6));
+    let mat_five = Arc::new(Dielectric::new(1.5));
 
     let world: Vec<Box<dyn Hittable>> = vec![
         Box::new(Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, mat_one)),
         Box::new(Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, mat_two)),
         Box::new(Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, mat_three)),
-        Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_four)),
+        // Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_four)),
+        Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_five)),
     ];
 
     let cam = Camera::new(lower_left, horizontal, vertical, origin);
