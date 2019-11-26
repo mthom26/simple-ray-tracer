@@ -1,6 +1,9 @@
 use std::f32::consts::PI;
 
-use crate::{ray::Ray, vector::Vec3};
+use crate::{
+    ray::Ray,
+    vector::{cross, Vec3},
+};
 
 pub struct Camera {
     lower_left: Vec3,
@@ -10,15 +13,19 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(vfov: f32, aspect: f32) -> Self {
+    pub fn new(look_from: Vec3, look_at: Vec3, up_dir: Vec3, vfov: f32, aspect: f32) -> Self {
         let theta = vfov * PI / 180.0;
         let half_height = (theta / 2.0).tan();
         let half_width = aspect * half_height;
 
-        let lower_left = Vec3::new(-half_width, -half_height, -1.0);
-        let horizontal = Vec3::new(2.0 * half_width, 0.0, 0.0);
-        let vertical = Vec3::new(0.0, 2.0 * half_height, 0.0);
-        let origin = Vec3::new(0.0, 0.0, 0.0);
+        let w = (look_from - look_at).get_unit();
+        let u = cross(&up_dir, &w).get_unit();
+        let v = cross(&w, &u);
+
+        let lower_left = look_from - half_width * u - half_height * v - w;
+        let horizontal = 2.0 * half_width * u;
+        let vertical = 2.0 * half_height * v;
+        let origin = look_from;
 
         Camera {
             lower_left,
@@ -29,7 +36,7 @@ impl Camera {
     }
 
     pub fn get_ray(&self, u: f32, v: f32) -> Ray {
-        let dir = self.lower_left + (u * self.horizontal) + (v * self.vertical);
+        let dir = self.lower_left + (u * self.horizontal) + (v * self.vertical) - self.origin;
         Ray::new(self.origin, dir)
     }
 }

@@ -113,9 +113,17 @@ pub fn dot(a: &Vec3, b: &Vec3) -> f32 {
     (a.x * b.x) + (a.y * b.y) + (a.z * b.z)
 }
 
+// Return cross product of two Vec3 vectors
+pub fn cross(a: &Vec3, b: &Vec3) -> Vec3 {
+    let x = a.y * b.z - a.z * b.y;
+    let y = -(a.x * b.z - a.z * b.x);
+    let z = a.x * b.y - a.y * b.x;
+    Vec3::new(x, y, z)
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::vector::Vec3;
+    use crate::vector::{cross, Vec3};
 
     #[test]
     fn addition() {
@@ -132,5 +140,22 @@ mod tests {
         a /= 2.0;
         let expected = Vec3::new(3.0, 2.0, 1.0);
         assert_eq!(a, expected);
+    }
+
+    #[test]
+    fn cross_product() {
+        let a = Vec3::new(1.0, 0.0, 0.0);
+        let b = Vec3::new(0.0, 1.0, 0.0);
+        let c = cross(&a, &b);
+        assert_eq!(0.0, c.x);
+        assert_eq!(0.0, c.y);
+        assert_eq!(1.0, c.z);
+
+        let a = Vec3::new(2.0, 3.0, 4.0);
+        let b = Vec3::new(5.0, 6.0, 7.0);
+        let c = cross(&a, &b);
+        assert_eq!(-3.0, c.x);
+        assert_eq!(6.0, c.y);
+        assert_eq!(-3.0, c.z);
     }
 }

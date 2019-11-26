@@ -77,7 +77,10 @@ fn main() {
     ];
 
     let aspect_ratio = x as f32 / y as f32;
-    let cam = Camera::new(90.0, aspect_ratio);
+    let from = Vec3::new(-2.0, 2.0, 1.0);
+    let to = Vec3::new(0.0, 0.0, -1.0);
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let cam = Camera::new(from, to, up, 50.0, aspect_ratio);
 
     for i in 0..y {
         for j in 0..x {
