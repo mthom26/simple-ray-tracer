@@ -61,11 +61,6 @@ fn main() {
     // Setup progress indicator
     let progress = initialise_progress_indicator(y);
 
-    let lower_left = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
-    let origin = Vec3::new(0.0, 0.0, 0.0);
-
     // Materials
     let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
     let mat_two = Arc::new(Lambertian::new(Vec3::new(0.5, 0.4, 0.1)));
@@ -81,7 +76,8 @@ fn main() {
         Box::new(Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, mat_five)),
     ];
 
-    let cam = Camera::new(lower_left, horizontal, vertical, origin);
+    let aspect_ratio = x as f32 / y as f32;
+    let cam = Camera::new(90.0, aspect_ratio);
 
     for i in 0..y {
         for j in 0..x {
