@@ -7,7 +7,14 @@ use crate::{
     vector::Vec3,
 };
 
-pub fn load_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
+pub fn load_scene(scene_name: String, x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
+    match &scene_name[..] {
+        "default" => default_scene(x, y),
+        _ => panic!("Could not load scene."),
+    }
+}
+
+fn default_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
     // Materials
     let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
     let mat_two = Arc::new(Lambertian::new(Vec3::new(0.5, 0.4, 0.1)));

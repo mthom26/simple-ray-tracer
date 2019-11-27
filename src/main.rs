@@ -19,6 +19,8 @@ mod utils;
 use utils::gen_random;
 mod scene;
 use scene::load_scene;
+mod config;
+use config::get_config;
 
 fn color(ray: Ray, world: &dyn Hittable, depth: usize) -> Vec3 {
     match world.hit(&ray, 0.001, MAX) {
@@ -45,8 +47,7 @@ fn color_background(ray: Ray) -> Vec3 {
 }
 
 fn main() {
-    let x: u64 = 200;
-    let y: u64 = 100;
+    let (x, y, scene) = get_config();
     let s: u64 = 100;
 
     if !Path::new("output").is_dir() {
@@ -61,7 +62,7 @@ fn main() {
     let progress = initialise_progress_indicator(y);
 
     // Get Scene
-    let (cam, world) = load_scene(x, y);
+    let (cam, world) = load_scene(scene, x, y);
 
     for i in 0..y {
         for j in 0..x {
