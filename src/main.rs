@@ -80,7 +80,9 @@ fn main() {
     let from = Vec3::new(-2.0, 2.0, 1.0);
     let to = Vec3::new(0.0, 0.0, -1.0);
     let up = Vec3::new(0.0, 1.0, 0.0);
-    let cam = Camera::new(from, to, up, 50.0, aspect_ratio);
+    let aperture = 0.5;
+    let focus_dist = (from - to).get_mag();
+    let cam = Camera::new(from, to, up, 50.0, aspect_ratio, aperture, focus_dist);
 
     for i in 0..y {
         for j in 0..x {
