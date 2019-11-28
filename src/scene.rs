@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     camera::Camera,
     material::{Dielectric, Lambertian, Metal},
-    shapes::{Hittable, Sphere},
+    shapes::{Hittable, MSphere, Sphere},
     utils::gen_random,
     vector::Vec3,
 };
@@ -12,6 +12,7 @@ pub fn load_scene(scene_name: String, x: u64, y: u64) -> (Camera, Vec<Box<dyn Hi
     match &scene_name[..] {
         "default" => default_scene(x, y),
         "spheres" => spheres_scene(x, y),
+        "motion" => motion_blur(x, y),
         _ => panic!("Could not load scene."),
     }
 }
@@ -37,7 +38,17 @@ fn default_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
     let up = Vec3::new(0.0, 1.0, 0.0);
     let aperture = 0.5;
     let focus_dist = (from - to).get_mag();
-    let cam = Camera::new(from, to, up, 50.0, aspect_ratio, aperture, focus_dist);
+    let cam = Camera::new(
+        from,
+        to,
+        up,
+        50.0,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        0.0,
+        0.0,
+    );
 
     (cam, world)
 }
@@ -131,7 +142,68 @@ fn spheres_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
     let up = Vec3::new(0.0, 1.0, 0.0);
     let aperture = 0.05;
     let focus_dist = (from - to).get_mag();
-    let cam = Camera::new(from, to, up, 50.0, aspect_ratio, aperture, focus_dist);
+    let cam = Camera::new(
+        from,
+        to,
+        up,
+        50.0,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        0.0,
+        0.0,
+    );
+
+    (cam, world)
+}
+
+fn motion_blur(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
+    let ground_mat = Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
+    let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.2, 0.2)));
+    let mat_two = Arc::new(Lambertian::new(Vec3::new(0.2, 0.8, 0.2)));
+    let mat_three = Arc::new(Lambertian::new(Vec3::new(0.2, 0.2, 0.8)));
+
+    let sphere_two = Box::new(MSphere::new(
+        Vec3::new(0.0, 0.75, -1.0),
+        Vec3::new(0.0, 0.5, -1.0),
+        0.5,
+        0.0,
+        1.0,
+        mat_two,
+    ));
+    let sphere_three = Box::new(MSphere::new(
+        Vec3::new(1.25, 1.0, -1.0),
+        Vec3::new(1.25, 0.5, -1.0),
+        0.5,
+        0.0,
+        1.0,
+        mat_three,
+    ));
+
+    let world: Vec<Box<dyn Hittable>> = vec![
+        Box::new(Sphere::new(Vec3::new(0.0, -500.0, -1.0), 500.0, ground_mat)),
+        Box::new(Sphere::new(Vec3::new(-1.25, 0.5, -1.0), 0.5, mat_one)),
+        sphere_two,
+        sphere_three,
+    ];
+
+    let aspect_ratio = x as f32 / y as f32;
+    let from = Vec3::new(0.0, 0.5, 2.0);
+    let to = Vec3::new(0.0, 0.3, -1.0);
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let aperture = 0.0;
+    let focus_dist = (from - to).get_mag();
+    let cam = Camera::new(
+        from,
+        to,
+        up,
+        70.0,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        0.0,
+        1.0,
+    );
 
     (cam, world)
 }

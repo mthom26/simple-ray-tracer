@@ -7,11 +7,12 @@ use crate::vector::Vec3;
 pub struct Ray {
     pub origin: Vec3,
     pub dir: Vec3,
+    pub time: f32,
 }
 
 impl Ray {
-    pub fn new(origin: Vec3, dir: Vec3) -> Self {
-        Ray { origin, dir }
+    pub fn new(origin: Vec3, dir: Vec3, time: f32) -> Self {
+        Ray { origin, dir, time }
     }
 
     pub fn point_at_parameter(&self, t: f32) -> Vec3 {

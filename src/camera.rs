@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use crate::{
     ray::Ray,
-    utils::random_in_unit_disk,
+    utils::{gen_random, random_in_unit_disk},
     vector::{cross, Vec3},
 };
 
@@ -15,6 +15,8 @@ pub struct Camera {
     v: Vec3,
     w: Vec3,
     lens_radius: f32,
+    time_0: f32,
+    time_1: f32,
 }
 
 impl Camera {
@@ -26,6 +28,8 @@ impl Camera {
         aspect: f32,
         aperture: f32,
         focus_dist: f32,
+        time_0: f32,
+        time_1: f32,
     ) -> Self {
         let lens_radius = aperture / 2.0;
         let theta = vfov * PI / 180.0;
@@ -51,6 +55,8 @@ impl Camera {
             v,
             w,
             lens_radius,
+            time_0,
+            time_1,
         }
     }
 
@@ -59,6 +65,8 @@ impl Camera {
         let offset = self.u * rd.x + self.v * rd.y;
         let dir =
             self.lower_left + (s * self.horizontal) + (t * self.vertical) - self.origin - offset;
-        Ray::new(self.origin + offset, dir)
+
+        let time = self.time_0 + gen_random() * (self.time_1 - self.time_0);
+        Ray::new(self.origin + offset, dir, time)
     }
 }
