@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     camera::Camera,
-    material::{Dielectric, Lambertian, Metal},
+    material::{Checkered, Dielectric, Lambertian, Metal, SolidColor},
     shapes::{Hittable, MSphere, Sphere},
     utils::gen_random,
     vector::Vec3,
@@ -13,15 +13,16 @@ pub fn load_scene(scene_name: String, x: u64, y: u64) -> (Camera, Vec<Box<dyn Hi
         "default" => default_scene(x, y),
         "spheres" => spheres_scene(x, y),
         "motion" => motion_blur(x, y),
+        "textures" => textures_scene(x, y),
         _ => panic!("Could not load scene."),
     }
 }
 
 fn default_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
     // Materials
-    let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
-    let mat_two = Arc::new(Lambertian::new(Vec3::new(0.5, 0.4, 0.1)));
-    let mat_three = Arc::new(Metal::new(Vec3::new(0.3, 0.2, 0.8), 0.1));
+    let mat_one = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.8, 0.3, 0.2))));
+    let mat_two = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.5, 0.4, 0.1))));
+    let mat_three = Arc::new(Metal::new(Arc::new(SolidColor::new(0.3, 0.2, 0.8)), 0.1));
     let mat_four = Arc::new(Dielectric::new(1.5));
 
     let world: Vec<Box<dyn Hittable>> = vec![
@@ -54,7 +55,7 @@ fn default_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
 }
 
 fn spheres_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
-    let ground_mat = Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.2)));
+    let ground_mat = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.8, 0.3, 0.2))));
     let mut world: Vec<Box<dyn Hittable>> = vec![Box::new(Sphere::new(
         Vec3::new(0.0, -1000.0, 0.0),
         1000.0,
@@ -67,8 +68,8 @@ fn spheres_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
         (Vec3::new(2.0, 0.5, -2.0), 0.5),
     ];
 
-    let mat_one = Arc::new(Metal::new(Vec3::new(0.3, 0.2, 0.8), 0.05));
-    let mat_two = Arc::new(Metal::new(Vec3::new(0.6, 0.9, 0.6), 0.2));
+    let mat_one = Arc::new(Metal::new(Arc::new(SolidColor::new(0.3, 0.2, 0.8)), 0.05));
+    let mat_two = Arc::new(Metal::new(Arc::new(SolidColor::new(0.6, 0.9, 0.6)), 0.2));
     let mat_three = Arc::new(Dielectric::new(1.5));
     let sphere_one = Box::new(Sphere::new(collisions[0].0, collisions[0].1, mat_one));
     let big_boi = Box::new(Sphere::new(collisions[1].0, collisions[1].1, mat_two));
@@ -108,18 +109,18 @@ fn spheres_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
                 match mat_chance {
                     val if val < 0.6 => {
                         // Diffuse
-                        let mat = Arc::new(Lambertian::new(Vec3::new(
+                        let mat = Arc::new(Lambertian::new(Arc::new(SolidColor::new(
                             gen_random(),
                             gen_random(),
                             gen_random(),
-                        )));
+                        ))));
                         let sphere = Box::new(Sphere::new(center, radius, mat));
                         world.push(sphere);
                     }
                     val if val < 0.85 => {
                         // Metallic
                         let mat = Arc::new(Metal::new(
-                            Vec3::new(gen_random(), gen_random(), gen_random()),
+                            Arc::new(SolidColor::new(gen_random(), gen_random(), gen_random())),
                             gen_random(),
                         ));
                         let sphere = Box::new(Sphere::new(center, radius, mat));
@@ -158,10 +159,10 @@ fn spheres_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
 }
 
 fn motion_blur(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
-    let ground_mat = Arc::new(Lambertian::new(Vec3::new(0.5, 0.5, 0.5)));
-    let mat_one = Arc::new(Lambertian::new(Vec3::new(0.8, 0.2, 0.2)));
-    let mat_two = Arc::new(Lambertian::new(Vec3::new(0.2, 0.8, 0.2)));
-    let mat_three = Arc::new(Lambertian::new(Vec3::new(0.2, 0.2, 0.8)));
+    let ground_mat = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.5, 0.5, 0.5))));
+    let mat_one = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.8, 0.2, 0.2))));
+    let mat_two = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.2, 0.8, 0.2))));
+    let mat_three = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.2, 0.2, 0.8))));
 
     let sphere_two = Box::new(MSphere::new(
         Vec3::new(0.0, 0.75, -1.0),
@@ -203,6 +204,53 @@ fn motion_blur(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
         focus_dist,
         0.0,
         1.0,
+    );
+
+    (cam, world)
+}
+
+fn textures_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
+    let ground_mat = Arc::new(Lambertian::new(Arc::new(Checkered::new(
+        Arc::new(SolidColor::new(0.35, 0.35, 0.45)),
+        Arc::new(SolidColor::new(0.5, 0.5, 0.6)),
+    ))));
+    let mat_metal = Arc::new(Metal::new(Arc::new(SolidColor::new(0.8, 0.8, 0.8)), 0.0));
+    let check_metal = Arc::new(Metal::new(
+        Arc::new(Checkered::new(
+            Arc::new(SolidColor::new(0.8, 0.2, 0.2)),
+            Arc::new(SolidColor::new(0.2, 0.8, 0.2)),
+        )),
+        0.0,
+    ));
+    let check_lam = Arc::new(Lambertian::new(Arc::new(Checkered::new(
+        Arc::new(SolidColor::new(0.0, 0.0, 0.0)),
+        Arc::new(SolidColor::new(1.0, 1.0, 1.0)),
+    ))));
+
+    let world: Vec<Box<dyn Hittable>> = vec![
+        Box::new(Sphere::new(Vec3::new(0.0, -500.0, -1.0), 500.0, ground_mat)),
+        Box::new(Sphere::new(Vec3::new(0.0, 0.8, -1.2), 0.8, mat_metal)),
+        Box::new(Sphere::new(Vec3::new(1.8, 0.5, -0.8), 0.5, check_metal)),
+        Box::new(Sphere::new(Vec3::new(-1.8, 0.5, -0.8), 0.5, check_lam)),
+    ];
+
+    // Camera setup
+    let aspect_ratio = x as f32 / y as f32;
+    let from = Vec3::new(0.0, 1.0, 1.5);
+    let to = Vec3::new(0.0, 0.0, -1.0);
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let aperture = 0.0;
+    let focus_dist = (from - to).get_mag();
+    let cam = Camera::new(
+        from,
+        to,
+        up,
+        70.0,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        0.0,
+        0.0,
     );
 
     (cam, world)

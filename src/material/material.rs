@@ -1,6 +1,7 @@
-use std::default::Default;
+use std::{default::Default, sync::Arc};
 
 use crate::{
+    material::{SolidColor, Texture},
     ray::{Ray, RayHit},
     utils::{gen_random, random_in_unit_sphere},
     vector::{dot, Vec3},
@@ -10,13 +11,13 @@ pub trait Material {
     fn scatter(&self, ray: Ray, hit: RayHit) -> Option<(Vec3, Ray)>;
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Lambertian {
-    pub albedo: Vec3,
+    pub albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Vec3) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
         Lambertian { albedo }
     }
 }
@@ -25,26 +26,27 @@ impl Material for Lambertian {
     fn scatter(&self, ray: Ray, hit: RayHit) -> Option<(Vec3, Ray)> {
         let target = hit.point + hit.normal + random_in_unit_sphere();
         let new_ray = Ray::new(hit.point, target - hit.point, ray.time);
-        Some((self.albedo, new_ray))
+        Some((self.albedo.value(0.0, 0.0, hit.point), new_ray))
     }
 }
 
 impl Default for Lambertian {
     fn default() -> Self {
+        let tex = SolidColor::new(0.5, 0.5, 0.5);
         Lambertian {
-            albedo: Vec3::new(0.5, 0.5, 0.5),
+            albedo: Arc::new(tex),
         }
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Metal {
-    pub albedo: Vec3,
+    pub albedo: Arc<dyn Texture>,
     pub fuzz: f32,
 }
 
 impl Metal {
-    pub fn new(albedo: Vec3, fuzz: f32) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>, fuzz: f32) -> Self {
         let fuzz = if fuzz > 1.0 { 1.0 } else { fuzz };
         Metal { albedo, fuzz }
     }
@@ -56,7 +58,7 @@ impl Material for Metal {
         let fuzz = self.fuzz * random_in_unit_sphere();
         let new_ray = Ray::new(hit.point, reflected + fuzz, ray.time);
         if dot(&new_ray.dir, &hit.normal) > 0.0 {
-            return Some((self.albedo, new_ray));
+            return Some((self.albedo.value(0.0, 0.0, hit.point), new_ray));
         }
         None
     }
