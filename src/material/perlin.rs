@@ -59,7 +59,7 @@ impl Perlin {
         let mut weight = 1.0;
 
         for _ in 0..depth {
-            accum += weight * self.noise(p);
+            accum += weight * self.noise(tmp);
             weight *= 0.5;
             tmp *= 2.0;
         }
@@ -119,4 +119,6 @@ fn interpolate(arr: &[[[Vec3; 2]; 2]; 2], u: f32, v: f32, w: f32) -> f32 {
     }
 
     accum
+    // Lol this caused much frustration -> https://github.com/RayTracing/raytracing.github.io/issues/92
+    // (accum + 1.0) * 0.5
 }

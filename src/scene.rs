@@ -257,7 +257,6 @@ fn textures_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
     (cam, world)
 }
 
-// This perlin noise texture doesn't look like the in the book, skipping it for now...
 fn perlin_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
     let mat_one = Arc::new(Lambertian::new(Arc::new(Noise::new(4.0))));
     let mat_two = Arc::new(Lambertian::new(Arc::new(Noise::new(4.0))));

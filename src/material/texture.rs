@@ -62,11 +62,12 @@ impl Noise {
     }
 }
 
-// This perlin noise texture doesn't look like the in the book, skipping it for now...
 impl Texture for Noise {
     fn value(&self, _u: f32, _v: f32, p: Vec3) -> Vec3 {
-        Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(p * self.scale)
+        // Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(p * self.scale)
         // Vec3::new(1.0, 1.0, 1.0) * self.noise.turb(p * self.scale, 7)
-        // Vec3::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + f32::sin(self.scale * p.x + 5.0 * self.noise.turb(p, 7)))
+        Vec3::new(1.0, 1.0, 1.0)
+            * 0.5
+            * (1.0 + f32::sin(self.scale * p.x + 5.0 * self.noise.turb(p, 7)))
     }
 }
