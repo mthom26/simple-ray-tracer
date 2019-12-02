@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::vector::Vec3;
+use crate::{material::Perlin, vector::Vec3};
 
 pub trait Texture {
     fn value(&self, u: f32, v: f32, p: Vec3) -> Vec3;
@@ -44,5 +44,29 @@ impl Texture for Checkered {
             val if val < 0.0 => self.odd.value(u, v, p),
             _ => self.even.value(u, v, p),
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct Noise {
+    noise: Perlin,
+    scale: f32,
+}
+
+impl Noise {
+    pub fn new(scale: f32) -> Self {
+        Noise {
+            noise: Perlin::new(),
+            scale,
+        }
+    }
+}
+
+// This perlin noise texture doesn't look like the in the book, skipping it for now...
+impl Texture for Noise {
+    fn value(&self, _u: f32, _v: f32, p: Vec3) -> Vec3 {
+        Vec3::new(1.0, 1.0, 1.0) * self.noise.noise(p * self.scale)
+        // Vec3::new(1.0, 1.0, 1.0) * self.noise.turb(p * self.scale, 7)
+        // Vec3::new(1.0, 1.0, 1.0) * 0.5 * (1.0 + f32::sin(self.scale * p.x + 5.0 * self.noise.turb(p, 7)))
     }
 }

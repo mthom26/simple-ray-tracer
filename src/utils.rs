@@ -7,6 +7,11 @@ pub fn gen_random() -> f32 {
     thread_rng().gen()
 }
 
+pub fn gen_range(low: f32, high: f32) -> f32 {
+    // Return random number between `low` and `high`
+    thread_rng().gen_range(low, high)
+}
+
 pub fn random_in_unit_sphere() -> Vec3 {
     let mut p =
         (2.0 * Vec3::new(gen_random(), gen_random(), gen_random())) - Vec3::new(1.0, 1.0, 1.0);

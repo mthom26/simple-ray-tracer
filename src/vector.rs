@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Vec3 {
@@ -81,6 +81,14 @@ impl Mul<Vec3> for f32 {
 
     fn mul(self, other: Vec3) -> Vec3 {
         Vec3::new(self * other.x, self * other.y, self * other.z)
+    }
+}
+
+impl MulAssign<f32> for Vec3 {
+    fn mul_assign(&mut self, other: f32) {
+        self.x *= other;
+        self.y *= other;
+        self.z *= other;
     }
 }
 
