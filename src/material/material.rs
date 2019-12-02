@@ -26,7 +26,7 @@ impl Material for Lambertian {
     fn scatter(&self, ray: Ray, hit: RayHit) -> Option<(Vec3, Ray)> {
         let target = hit.point + hit.normal + random_in_unit_sphere();
         let new_ray = Ray::new(hit.point, target - hit.point, ray.time);
-        Some((self.albedo.value(0.0, 0.0, hit.point), new_ray))
+        Some((self.albedo.value(hit.u, hit.v, hit.point), new_ray))
     }
 }
 
@@ -58,7 +58,7 @@ impl Material for Metal {
         let fuzz = self.fuzz * random_in_unit_sphere();
         let new_ray = Ray::new(hit.point, reflected + fuzz, ray.time);
         if dot(&new_ray.dir, &hit.normal) > 0.0 {
-            return Some((self.albedo.value(0.0, 0.0, hit.point), new_ray));
+            return Some((self.albedo.value(hit.u, hit.v, hit.point), new_ray));
         }
         None
     }

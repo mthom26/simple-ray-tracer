@@ -1,4 +1,7 @@
-use std::sync::Arc;
+use std::{
+    f32::consts::{FRAC_PI_2, PI},
+    sync::Arc,
+};
 
 use crate::{
     material::Material,
@@ -142,11 +145,24 @@ fn create_ray_hit(
     radius: f32,
     mat: &Arc<dyn Material>,
 ) -> Option<RayHit> {
+    let normal = (ray.point_at_parameter(temp) - center) / radius;
+    let (u, v) = get_sphere_uv(normal);
     let ray_hit = RayHit::new(
         temp,
+        u,
+        v,
         ray.point_at_parameter(temp),
-        (ray.point_at_parameter(temp) - center) / radius,
+        normal,
         Arc::clone(mat),
     );
     Some(ray_hit)
+}
+
+fn get_sphere_uv(p: Vec3) -> (f32, f32) {
+    let phi = p.z.atan2(p.x);
+    let theta = p.y.asin();
+
+    let u = 1.0 - (phi + PI) / (2.0 * PI);
+    let v = (theta + FRAC_PI_2) / PI;
+    (u, v)
 }

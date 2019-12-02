@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use crate::{
     camera::Camera,
-    material::{Checkered, Dielectric, Lambertian, Metal, Noise, SolidColor},
+    material::{Checkered, Dielectric, Image, Lambertian, Metal, Noise, SolidColor},
     shapes::{Hittable, MSphere, Sphere},
     utils::gen_random,
     vector::Vec3,
@@ -15,6 +15,7 @@ pub fn load_scene(scene_name: String, x: u64, y: u64) -> (Camera, Vec<Box<dyn Hi
         "motion" => motion_blur(x, y),
         "textures" => textures_scene(x, y),
         "perlin" => perlin_scene(x, y),
+        "image" => test_image_scene(x, y),
         _ => panic!("Could not load scene."),
     }
 }
@@ -263,6 +264,63 @@ fn perlin_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
 
     let world: Vec<Box<dyn Hittable>> = vec![
         Box::new(Sphere::new(Vec3::new(0.0, 2.0, -1.0), 2.0, mat_one)),
+        Box::new(Sphere::new(Vec3::new(0.0, -500.0, -1.0), 500.0, mat_two)),
+    ];
+
+    // Camera setup
+    let aspect_ratio = x as f32 / y as f32;
+    let from = Vec3::new(-7.0, 3.2, 1.0);
+    let to = Vec3::new(0.0, 0.0, -1.0);
+    let up = Vec3::new(0.0, 1.0, 0.0);
+    let aperture = 0.0;
+    let focus_dist = (from - to).get_mag();
+    let cam = Camera::new(
+        from,
+        to,
+        up,
+        60.0,
+        aspect_ratio,
+        aperture,
+        focus_dist,
+        0.0,
+        0.0,
+    );
+
+    (cam, world)
+}
+
+fn test_image_scene(x: u64, y: u64) -> (Camera, Vec<Box<dyn Hittable>>) {
+    #[rustfmt::skip]
+    let data = vec![
+        // Placeholder colour values for proper image data
+        // Red band at top
+        255, 0, 0, 
+        215, 0, 0,
+        175, 0, 0,
+        135, 0, 0,
+        // Green band
+        0, 255, 0,
+        0, 215, 0,
+        0, 175, 0,
+        0, 135, 0,
+        // Blue band
+        0, 0, 255,
+        0, 0, 215,
+        0, 0, 175,
+        0, 0, 135,
+        // Yellow band at bottom
+        255, 255, 0,
+        215, 215, 0,
+        175, 175, 0,
+        135, 135, 0,
+    ];
+    let (nx, ny) = (4, 4);
+
+    let mat_one = Arc::new(Lambertian::new(Arc::new(Image::new(data, nx, ny))));
+    let mat_two = Arc::new(Lambertian::new(Arc::new(SolidColor::new(0.4, 0.4, 0.5))));
+
+    let world: Vec<Box<dyn Hittable>> = vec![
+        Box::new(Sphere::new(Vec3::new(0.0, 1.5, -1.0), 1.5, mat_one)),
         Box::new(Sphere::new(Vec3::new(0.0, -500.0, -1.0), 500.0, mat_two)),
     ];
 

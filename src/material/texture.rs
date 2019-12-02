@@ -71,3 +71,39 @@ impl Texture for Noise {
             * (1.0 + f32::sin(self.scale * p.x + 5.0 * self.noise.turb(p, 7)))
     }
 }
+
+#[derive(Clone)]
+pub struct Image {
+    data: Vec<u8>,
+    nx: usize,
+    ny: usize,
+}
+
+impl Image {
+    pub fn new(data: Vec<u8>, nx: usize, ny: usize) -> Self {
+        Image { data, nx, ny }
+    }
+}
+
+impl Texture for Image {
+    fn value(&self, u: f32, v: f32, _p: Vec3) -> Vec3 {
+        let (nx, ny) = (self.nx, self.ny);
+        let mut i = (u * nx as f32) as usize;
+        let mut j = ((1.0 - v) * ny as f32) as usize;
+        if i > (nx - 1) {
+            i = nx - 1;
+        }
+        if j > (ny - 1) {
+            j = ny - 1;
+        }
+
+        let ri = 3 * i + 3 * nx * j;
+        let gi = 3 * i + 3 * nx * j + 1;
+        let bi = 3 * i + 3 * nx * j + 2;
+        let r = self.data[ri] as f32 / 255.0;
+        let g = self.data[gi] as f32 / 255.0;
+        let b = self.data[bi] as f32 / 255.0;
+
+        Vec3::new(r, g, b)
+    }
+}
